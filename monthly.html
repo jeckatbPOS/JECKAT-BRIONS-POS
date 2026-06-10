@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Monthly Sales</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #f5f4f0;
+      --surface: #ffffff;
+      --border: #e2e0d8;
+      --text: #111008;
+      --muted: #8a8070;
+      --green: #2d6a4f;
+      --green-light: #e8f5f0;
+      --red: #c0392b;
+      --red-light: #fdf0ef;
+      --blue: #1a3a5c;
+      --blue-light: #eef3f9;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+    }
+
+    /* ── TOPBAR ── */
+    .topbar {
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      padding: 14px 28px; display: flex; align-items: center;
+      justify-content: space-between; position: sticky; top: 0; z-index: 50;
+    }
+    .topbar-brand { font-family: 'DM Serif Display', serif; font-size: 20px; letter-spacing: -.03em; }
+    .topbar-brand em { font-style: italic; color: var(--muted); }
+    .topbar-nav { display: flex; gap: 8px; align-items: center; }
+    .nav-btn {
+      font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500;
+      padding: 7px 14px; border-radius: 8px; border: 1px solid var(--border);
+      background: transparent; cursor: pointer; color: var(--muted); transition: all .15s;
+    }
+    .nav-btn:hover  { border-color: var(--text); color: var(--text); background: var(--surface); }
+    .nav-btn.active { background: var(--text); color: #fff; border-color: var(--text); }
+    .nav-btn.logout:hover { border-color: var(--red); color: var(--red); background: var(--red-light); }
+
+    /* ── LAYOUT ── */
+    .container { max-width: 1100px; margin: 0 auto; padding: 32px 24px 60px; }
+
+    .page-header { margin-bottom: 28px; }
+    .page-header h1 { font-family: 'DM Serif Display', serif; font-size: 32px; letter-spacing: -.03em; margin-bottom: 4px; }
+    .page-header h1 em { font-style: italic; color: var(--muted); }
+    .page-header p { font-size: 13px; color: var(--muted); }
+
+    /* ── CONTROLS ── */
+    .controls-row { display: flex; gap: 10px; align-items: center; margin-bottom: 28px; flex-wrap: wrap; }
+    .select-input {
+      font-family: 'DM Sans', sans-serif; padding: 9px 14px; border-radius: 10px;
+      border: 1px solid var(--border); background: var(--surface);
+      font-size: 13px; color: var(--text); outline: none; cursor: pointer;
+      transition: border-color .15s;
+    }
+    .select-input:focus { border-color: var(--text); }
+    .load-btn {
+      font-family: 'DM Sans', sans-serif; padding: 9px 18px; border-radius: 10px;
+      border: none; background: var(--text); color: #fff;
+      font-size: 13px; font-weight: 600; cursor: pointer; transition: all .15s;
+    }
+    .load-btn:hover { background: #2a2a20; }
+
+    /* ── SUMMARY TILES ── */
+    .summary-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 12px; margin-bottom: 28px;
+    }
+    .summary-tile {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; padding: 16px 18px;
+    }
+    .summary-tile-label { font-size: 9px; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); font-weight: 700; margin-bottom: 6px; }
+    .summary-tile-value { font-family: 'DM Serif Display', serif; font-size: 24px; letter-spacing: -.02em; }
+    .summary-tile-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+    /* ── BRANCH CARDS ── */
+    .branch-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 14px; margin-bottom: 28px;
+    }
+    .branch-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; padding: 18px 20px;
+      transition: box-shadow .2s, transform .2s;
+    }
+    .branch-card:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(0,0,0,.08); }
+    .branch-card-name { font-family: 'DM Serif Display', serif; font-size: 15px; margin-bottom: 12px; }
+    .branch-card-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+    .branch-card-label { font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 700; }
+    .branch-card-value { font-family: 'DM Serif Display', serif; font-size: 18px; }
+    .branch-card-divider { border: none; border-top: 1px solid var(--border); margin: 10px 0; }
+    .branch-card-updated { font-size: 10px; color: var(--muted); }
+
+    /* ── MONTHLY TABLE ── */
+    .section-label {
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .1em; color: var(--muted); margin-bottom: 12px;
+    }
+    .table-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; overflow: hidden; margin-bottom: 28px;
+    }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    thead th {
+      font-size: 9px; text-transform: uppercase; letter-spacing: .08em;
+      color: var(--muted); font-weight: 700;
+      padding: 12px 20px; text-align: left;
+      border-bottom: 1px solid var(--border); background: var(--bg);
+    }
+    thead th:last-child, thead th.right { text-align: right; }
+    tbody td { padding: 11px 20px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    tbody tr:last-child td { border-bottom: none; }
+    .td-right { text-align: right; font-weight: 600; color: var(--green); }
+    .td-muted  { color: var(--muted); }
+    .rank-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 22px; height: 22px; border-radius: 50%;
+      font-size: 10px; font-weight: 700;
+      background: var(--bg); border: 1px solid var(--border); color: var(--muted);
+    }
+    .rank-badge.gold   { background: #fff8e1; border-color: #ffc107; color: #856404; }
+    .rank-badge.silver { background: #f5f5f5; border-color: #aaa;    color: #555; }
+    .rank-badge.bronze { background: #fff3e0; border-color: #ff9800; color: #e65100; }
+
+    /* ── TOP PRODUCTS ── */
+    .bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .bar-label { font-size: 12px; min-width: 120px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .bar-track { flex: 1; height: 8px; background: var(--bg); border-radius: 4px; overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: 4px; background: var(--green); transition: width .5s ease; }
+    .bar-value { font-size: 11px; font-weight: 600; color: var(--green); min-width: 70px; text-align: right; }
+
+    .loading { padding: 40px; text-align: center; color: var(--muted); font-size: 13px; }
+
+    @media (max-width: 640px) {
+      .summary-grid { grid-template-columns: 1fr 1fr; }
+      .branch-grid  { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<nav class="topbar">
+  <span class="topbar-brand"><em>pos</em>system</span>
+  <div class="topbar-nav">
+    <button class="nav-btn" onclick="window.location.href='admin.html'">Inventory</button>
+    <button class="nav-btn" onclick="window.location.href='daily.html'">Daily</button>
+    <button class="nav-btn active">Monthly</button>
+    <button class="nav-btn logout" onclick="logout()">Logout →</button>
+  </div>
+</nav>
+
+<div class="container">
+
+  <div class="page-header">
+    <h1>Monthly <em>Sales</em></h1>
+    <p>Branch-level monthly revenue, transactions, and top products.</p>
+  </div>
+
+  <!-- CONTROLS -->
+  <div class="controls-row">
+    <select id="monthSelect" class="select-input"></select>
+    <select id="yearSelect"  class="select-input"></select>
+    <button class="load-btn" onclick="loadMonthly()">Load</button>
+  </div>
+
+  <!-- OVERALL SUMMARY -->
+  <div class="summary-grid">
+    <div class="summary-tile">
+      <div class="summary-tile-label">Total Revenue</div>
+      <div class="summary-tile-value" id="sumRevenue">—</div>
+    </div>
+    <div class="summary-tile">
+      <div class="summary-tile-label">Transactions</div>
+      <div class="summary-tile-value" id="sumTx">—</div>
+    </div>
+    <div class="summary-tile">
+      <div class="summary-tile-label">Top Branch</div>
+      <div class="summary-tile-value" id="sumTopBranch" style="font-size:16px;">—</div>
+    </div>
+    <div class="summary-tile">
+      <div class="summary-tile-label">Avg per Branch</div>
+      <div class="summary-tile-value" id="sumAvg">—</div>
+    </div>
+  </div>
+
+  <!-- BRANCH CARDS -->
+  <div class="section-label">Branch Breakdown</div>
+  <div class="branch-grid" id="branchGrid">
+    <div class="loading" style="grid-column:1/-1;">Select a month and click Load</div>
+  </div>
+
+  <!-- BRANCH RANKING TABLE -->
+  <div class="section-label">Branch Ranking</div>
+  <div class="table-card">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Branch</th>
+            <th class="right">Revenue</th>
+            <th class="right">Transactions</th>
+            <th class="right">Avg / Tx</th>
+          </tr>
+        </thead>
+        <tbody id="rankingBody">
+          <tr><td colspan="5" style="padding:20px;text-align:center;color:var(--muted);">—</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- TOP PRODUCTS (from transactions) -->
+  <div class="section-label">Top Products This Month</div>
+  <div class="table-card">
+    <div style="padding: 18px 20px;" id="topProductsArea">
+      <div style="color:var(--muted);font-size:12px;">—</div>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./script.js"></script>
+<script>
+  // ── AUTH ──
+  (function () {
+    const stored = localStorage.getItem("user");
+    if (!stored) { window.location.href = "index.html"; return; }
+    try {
+      const u = JSON.parse(stored);
+      if (!u || u.role !== "admin") window.location.href = "cashier.html";
+    } catch (e) { window.location.href = "index.html"; }
+  })();
+
+  const BRANCH_NAMES = {
+    1: "999 MALL 1A-06",
+    2: "999 MALL 1F-01",
+    3: "DIVI MALL 21-08",
+    4: "168 MALL"
+  };
+
+  const MONTHS = [
+    "January","February","March","April","May","June",
+    "July","August","September","October","November","December"
+  ];
+
+  // ── Populate dropdowns ──
+  (function () {
+    const mSel = document.getElementById("monthSelect");
+    const ySel = document.getElementById("yearSelect");
+    const now  = new Date();
+
+    MONTHS.forEach((m, i) => {
+      const opt = document.createElement("option");
+      opt.value = i + 1;
+      opt.textContent = m;
+      if (i + 1 === now.getMonth() + 1) opt.selected = true;
+      mSel.appendChild(opt);
+    });
+
+    for (let y = now.getFullYear(); y >= 2024; y--) {
+      const opt = document.createElement("option");
+      opt.value = y;
+      opt.textContent = y;
+      if (y === now.getFullYear()) opt.selected = true;
+      ySel.appendChild(opt);
+    }
+
+    loadMonthly();
+  })();
+
+  async function loadMonthly() {
+    const month = parseInt(document.getElementById("monthSelect").value);
+    const year  = parseInt(document.getElementById("yearSelect").value);
+
+    const branchGrid  = document.getElementById("branchGrid");
+    const rankingBody = document.getElementById("rankingBody");
+    const topArea     = document.getElementById("topProductsArea");
+
+    branchGrid.innerHTML  = `<div class="loading" style="grid-column:1/-1;">Loading…</div>`;
+    rankingBody.innerHTML = `<tr><td colspan="5" style="padding:20px;text-align:center;color:var(--muted);">Loading…</td></tr>`;
+    topArea.innerHTML     = `<div style="color:var(--muted);font-size:12px;">Loading…</div>`;
+
+    document.getElementById("sumRevenue").textContent  = "—";
+    document.getElementById("sumTx").textContent       = "—";
+    document.getElementById("sumTopBranch").textContent= "—";
+    document.getElementById("sumAvg").textContent      = "—";
+
+    try {
+      // ── 1. Fetch monthly_sales for this month+year ──
+      const { data: mRows, error: mErr } = await window.client
+        .from("monthly_sales")
+        .select("*")
+        .eq("month", month)
+        .eq("year",  year);
+
+      if (mErr) throw mErr;
+
+      // ── 2. Fetch transactions for top-products breakdown ──
+      const monthStr = year + "-" + String(month).padStart(2, "0");
+      const firstDay = monthStr + "-01";
+      const lastDay  = new Date(year, month, 0).getDate();
+      const lastDayStr = monthStr + "-" + String(lastDay).padStart(2, "0");
+
+      const { data: txns, error: txErr } = await window.client
+        .from("transactions")
+        .select("items, total, branch")
+        .gte("created_at", firstDay + "T00:00:00")
+        .lte("created_at", lastDayStr + "T23:59:59");
+
+      if (txErr) throw txErr;
+
+      // ── Build product map ──
+      const productMap = {};
+      (txns || []).forEach(tx => {
+        const its = Array.isArray(tx.items) ? tx.items : [];
+        its.forEach(i => {
+          const n = i.name || "Unknown";
+          if (!productMap[n]) productMap[n] = { qty: 0, total: 0 };
+          productMap[n].qty   += Number(i.qty || i.quantity || 0);
+          productMap[n].total += Number(i.total || 0);
+        });
+      });
+
+      const rows = mRows || [];
+
+      if (rows.length === 0 && (!txns || txns.length === 0)) {
+        branchGrid.innerHTML  = `<div class="loading" style="grid-column:1/-1;">No data for ${MONTHS[month-1]} ${year}</div>`;
+        rankingBody.innerHTML = `<tr><td colspan="5" style="padding:20px;text-align:center;color:var(--muted);">No data</td></tr>`;
+        topArea.innerHTML     = `<div style="color:var(--muted);font-size:12px;">No data</div>`;
+        document.getElementById("sumRevenue").textContent  = "₱0.00";
+        document.getElementById("sumTx").textContent       = "0";
+        document.getElementById("sumTopBranch").textContent= "—";
+        document.getElementById("sumAvg").textContent      = "₱0.00";
+        return;
+      }
+
+      // ── Summary ──
+      let totalRev = 0, totalTx = 0;
+      rows.forEach(r => {
+        totalRev += Number(r.total_sales || 0);
+        totalTx  += Number(r.transaction_count || 0);
+      });
+
+      const sorted      = [...rows].sort((a, b) => b.total_sales - a.total_sales);
+      const topBranch   = sorted[0] ? (BRANCH_NAMES[sorted[0].branch] || "Branch " + sorted[0].branch) : "—";
+      const avgPerBranch = rows.length > 0 ? totalRev / rows.length : 0;
+
+      document.getElementById("sumRevenue").textContent   = "₱" + totalRev.toFixed(2);
+      document.getElementById("sumTx").textContent        = totalTx;
+      document.getElementById("sumTopBranch").textContent = topBranch;
+      document.getElementById("sumAvg").textContent       = "₱" + avgPerBranch.toFixed(2);
+
+      // ── Branch cards ──
+      if (rows.length === 0) {
+        branchGrid.innerHTML = `<div class="loading" style="grid-column:1/-1;">No branch data for this month.</div>`;
+      } else {
+        branchGrid.innerHTML = sorted.map(r => {
+          const name    = BRANCH_NAMES[r.branch] || "Branch " + r.branch;
+          const rev     = Number(r.total_sales || 0);
+          const txCount = Number(r.transaction_count || 0);
+          const avg     = txCount > 0 ? rev / txCount : 0;
+          const updated = r.updated
+            ? new Date(r.updated).toLocaleString("en-PH", { dateStyle: "medium", timeStyle: "short" })
+            : "—";
+
+          return `
+            <div class="branch-card">
+              <div class="branch-card-name">${name}</div>
+              <div class="branch-card-row">
+                <span class="branch-card-label">Revenue</span>
+                <span class="branch-card-value">₱${rev.toFixed(2)}</span>
+              </div>
+              <div class="branch-card-row">
+                <span class="branch-card-label">Transactions</span>
+                <span class="branch-card-value">${txCount}</span>
+              </div>
+              <div class="branch-card-row">
+                <span class="branch-card-label">Avg / Tx</span>
+                <span class="branch-card-value" style="font-size:15px;">₱${avg.toFixed(2)}</span>
+              </div>
+              <hr class="branch-card-divider">
+              <div class="branch-card-updated">Updated: ${updated}</div>
+            </div>`;
+        }).join("");
+      }
+
+      // ── Ranking table ──
+      rankingBody.innerHTML = sorted.length === 0
+        ? `<tr><td colspan="5" style="padding:20px;text-align:center;color:var(--muted);">No data</td></tr>`
+        : sorted.map((r, idx) => {
+            const name    = BRANCH_NAMES[r.branch] || "Branch " + r.branch;
+            const rev     = Number(r.total_sales || 0);
+            const txCount = Number(r.transaction_count || 0);
+            const avg     = txCount > 0 ? rev / txCount : 0;
+            const rankClass = idx === 0 ? "gold" : idx === 1 ? "silver" : idx === 2 ? "bronze" : "";
+            return `
+              <tr>
+                <td><span class="rank-badge ${rankClass}">${idx + 1}</span></td>
+                <td style="font-weight:500;">${name}</td>
+                <td class="td-right">₱${rev.toFixed(2)}</td>
+                <td class="td-right td-muted">${txCount}</td>
+                <td class="td-right td-muted">₱${avg.toFixed(2)}</td>
+              </tr>`;
+          }).join("");
+
+      // ── Top products bar chart ──
+      const topProducts = Object.entries(productMap)
+        .sort((a, b) => b[1].total - a[1].total)
+        .slice(0, 8);
+
+      if (topProducts.length === 0) {
+        topArea.innerHTML = `<div style="color:var(--muted);font-size:12px;">No product data available.</div>`;
+      } else {
+        const maxVal = topProducts[0][1].total;
+        topArea.innerHTML = topProducts.map(([name, d]) => {
+          const pct = maxVal > 0 ? (d.total / maxVal) * 100 : 0;
+          return `
+            <div class="bar-row">
+              <div class="bar-label" title="${name}">${name}</div>
+              <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
+              <div class="bar-value">₱${d.total.toFixed(2)}</div>
+            </div>`;
+        }).join("");
+      }
+
+    } catch (err) {
+      branchGrid.innerHTML  = `<div class="loading" style="grid-column:1/-1;">❌ ${err.message}</div>`;
+      rankingBody.innerHTML = `<tr><td colspan="5" style="padding:20px;text-align:center;color:var(--red);">❌ ${err.message}</td></tr>`;
+      console.error(err);
+    }
+  }
+</script>
+</body>
+</html>

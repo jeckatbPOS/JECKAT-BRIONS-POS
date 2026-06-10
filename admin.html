@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="./admin.css">
+</head>
+<body data-page="admin">
+
+<!-- TOPBAR -->
+<nav class="topbar">
+  <span class="topbar-brand">admin.</span>
+  <div class="topbar-actions">
+    <button onclick="window.location.href='daily.html'">Daily</button>
+    <button onclick="window.location.href='monthly.html'">Monthly</button>
+    <button onclick="logout()">Logout →</button>
+  </div>
+</nav>
+
+<div class="container">
+
+  <!-- PAGE HEADER -->
+  <div class="page-header">
+    <h1>Product <em>Inventory</em></h1>
+    <p>Manage your products, stock levels and promotions.</p>
+  </div>
+
+  <!-- ADD PRODUCT -->
+  <div class="section">
+    <div class="section-label">Add / Edit Product</div>
+
+    <div class="form-panel">
+      <div class="form-grid">
+
+        <div class="form-field">
+          <label>Product Name</label>
+          <input id="name" type="text" placeholder="e.g. Fried Chicken">
+        </div>
+
+        <div class="form-field">
+          <label>Price (₱)</label>
+          <input id="price" type="number" step="0.01" min="0" placeholder="0.00">
+        </div>
+
+        <div class="form-field">
+          <label>Stock Qty</label>
+          <input id="stock" type="number" min="0" placeholder="0">
+        </div>
+
+        <div class="form-field">
+          <label>Image</label>
+          <input id="imageFile" type="file" accept="image/*">
+        </div>
+
+        <div class="form-field">
+          <label>Color</label>
+          <input id="color" type="text" placeholder="e.g. Red, Blue, Green, Black">
+        </div>
+
+        <div class="form-field">
+          <label>Sizes</label>
+          <input id="sizes" type="text" placeholder="e.g. S, M, L, XL">
+        </div>
+
+        <div class="form-field">
+          <label>Promo Status</label>
+          <!-- Hidden real checkbox (used by script.js) -->
+          <input type="checkbox" id="promoEligible">
+          <!-- Visual toggle -->
+          <button type="button" class="promo-toggle" id="promoToggleBtn" onclick="togglePromo()">
+            <span class="dot"></span>
+            <span id="promoLabel">Not Eligible</span>
+          </button>
+        </div>
+
+      </div>
+
+      <div class="form-actions">
+        <button id="addBtn" class="btn primary" onclick="addProduct()">+ Add Product</button>
+        <button id="updateBtn" class="btn primary" style="display:none;" onclick="updateProduct()">Save Changes</button>
+        <button id="cancelBtn" class="btn ghost" style="display:none;" onclick="cancelEdit()">Cancel</button>
+      </div>
+
+      <p id="message"></p>
+    </div>
+  </div>
+
+  <!-- INVENTORY -->
+  <div class="section">
+    <div class="section-label">Current Inventory</div>
+    <div id="products" class="grid"></div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./script.js"></script>
+
+<script>
+  // Auth check
+  (function () {
+    const stored = localStorage.getItem("user");
+    if (!stored) { window.location.href = "index.html"; return; }
+    try {
+      const u = JSON.parse(stored);
+      if (!u || u.role !== "admin") window.location.href = "cashier.html";
+    } catch (e) { window.location.href = "index.html"; }
+  })();
+
+  // Promo toggle UI
+  function togglePromo() {
+    const cb = document.getElementById("promoEligible");
+    const btn = document.getElementById("promoToggleBtn");
+    const label = document.getElementById("promoLabel");
+    cb.checked = !cb.checked;
+    if (cb.checked) {
+      btn.classList.add("active");
+      label.textContent = "Promo Eligible";
+    } else {
+      btn.classList.remove("active");
+      label.textContent = "Not Eligible";
+    }
+  }
+
+  // Sync toggle when startEdit is called
+  const _origStartEdit = window.startEdit;
+  window.startEdit = function(product) {
+    _origStartEdit(product);
+    const cb = document.getElementById("promoEligible");
+    const btn = document.getElementById("promoToggleBtn");
+    const label = document.getElementById("promoLabel");
+    // sync visual state after startEdit sets cb.checked
+    setTimeout(() => {
+      if (cb.checked) {
+        btn.classList.add("active");
+        label.textContent = "Promo Eligible";
+      } else {
+        btn.classList.remove("active");
+        label.textContent = "Not Eligible";
+      }
+      // show cancel button
+      const cancelBtn = document.getElementById("cancelBtn");
+      if (cancelBtn) cancelBtn.style.display = "inline-flex";
+    }, 0);
+  };
+
+  function cancelEdit() {
+    window.editingId = null;
+    document.getElementById("name").value = "";
+    document.getElementById("price").value = "";
+    document.getElementById("stock").value = "";
+    document.getElementById("color").value = "";
+    document.getElementById("sizes").value = "";
+    document.getElementById("promoEligible").checked = false;
+    document.getElementById("promoToggleBtn").classList.remove("active");
+    document.getElementById("promoLabel").textContent = "Not Eligible";
+    document.getElementById("addBtn").style.display = "inline-flex";
+    document.getElementById("updateBtn").style.display = "none";
+    document.getElementById("cancelBtn").style.display = "none";
+    document.getElementById("message").innerText = "";
+  }
+
+  window.loadProducts();
+</script>
+
+</body>
+</html>

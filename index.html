@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>POS System — Login</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after {
+      margin: 0; padding: 0; box-sizing: border-box;
+    }
+
+    :root {
+      --bg: #f5f4f0;
+      --surface: #ffffff;
+      --border: #e8e6e0;
+      --ink: #0e0e0e;
+      --ink-muted: #888880;
+      --ink-faint: #c8c6c0;
+      --radius: 14px;
+      --radius-sm: 8px;
+    }
+
+    html, body {
+      height: 100%;
+    }
+
+    body {
+      font-family: 'DM Sans', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      -webkit-font-smoothing: antialiased;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      min-height: 100vh;
+    }
+
+    /* ======= LEFT PANEL ======= */
+    .left-panel {
+      background: var(--ink);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 48px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* grain texture overlay */
+    .left-panel::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      opacity: 0.6;
+    }
+
+    .left-brand {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: 22px;
+      color: rgba(255,255,255,0.9);
+      letter-spacing: -0.01em;
+      position: relative;
+      z-index: 1;
+    }
+
+    .left-hero {
+      position: relative;
+      z-index: 1;
+    }
+
+    .left-hero h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(38px, 4vw, 56px);
+      font-weight: 700;
+      line-height: 1.08;
+      letter-spacing: -0.03em;
+      color: #fff;
+      margin-bottom: 20px;
+    }
+
+    .left-hero h2 em {
+      font-style: italic;
+      color: rgba(255,255,255,0.55);
+    }
+
+    .left-hero p {
+      font-size: 14px;
+      color: rgba(255,255,255,0.45);
+      font-weight: 400;
+      line-height: 1.6;
+      max-width: 300px;
+    }
+
+    .left-footer {
+      font-size: 12px;
+      color: rgba(255,255,255,0.25);
+      position: relative;
+      z-index: 1;
+      letter-spacing: 0.04em;
+    }
+
+    /* decorative pill tags */
+    .tag-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 32px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 99px;
+      border: 1px solid rgba(255,255,255,0.12);
+      font-size: 12px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.5);
+      letter-spacing: 0.02em;
+    }
+
+    .tag .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.3);
+    }
+
+    .tag.active {
+      border-color: rgba(255,255,255,0.25);
+      color: rgba(255,255,255,0.8);
+    }
+
+    .tag.active .dot {
+      background: #6ee7a0;
+    }
+
+    /* ======= RIGHT PANEL ======= */
+    .right-panel {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 48px 40px;
+      background: var(--bg);
+    }
+
+    .login-box {
+      width: 100%;
+      max-width: 380px;
+    }
+
+    .login-eyebrow {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--ink-muted);
+      margin-bottom: 28px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .login-eyebrow::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .login-box h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 36px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      color: var(--ink);
+      margin-bottom: 6px;
+    }
+
+    .login-box h1 em {
+      font-style: italic;
+      color: var(--ink-muted);
+    }
+
+    .login-subtitle {
+      font-size: 13px;
+      color: var(--ink-muted);
+      margin-bottom: 36px;
+      font-weight: 400;
+    }
+
+    .field {
+      margin-bottom: 16px;
+    }
+
+    .field label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      color: var(--ink-muted);
+      margin-bottom: 7px;
+    }
+
+    .field input {
+      width: 100%;
+      padding: 13px 16px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      font-size: 14px;
+      font-family: 'DM Sans', sans-serif;
+      outline: none;
+      background: var(--surface);
+      box-sizing: border-box;
+      transition: border-color 0.18s ease, box-shadow 0.18s ease;
+      color: var(--ink);
+      -webkit-appearance: none;
+    }
+
+    .field input:focus {
+      border-color: var(--ink);
+      box-shadow: 0 0 0 3px rgba(14,14,14,0.07);
+    }
+
+    .field input::placeholder {
+      color: var(--ink-faint);
+    }
+
+    .btn-login {
+      width: 100%;
+      margin-top: 8px;
+      padding: 14px;
+      border-radius: var(--radius-sm);
+      border: none;
+      background: var(--ink);
+      color: #fff;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 16px rgba(14,14,14,0.18);
+      letter-spacing: 0.01em;
+    }
+
+    .btn-login:hover {
+      background: #1a1a1a;
+      transform: translateY(-2px);
+      box-shadow: 0 10px 28px rgba(14,14,14,0.22);
+    }
+
+    .btn-login:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 8px rgba(14,14,14,0.14);
+    }
+
+    #message {
+      margin-top: 14px;
+      padding: 11px 14px;
+      border-radius: var(--radius-sm);
+      background: #fdf0ee;
+      border: 1px solid #f5cdc8;
+      font-size: 13px;
+      color: #c0392b;
+      min-height: 0;
+      word-break: break-word;
+      font-weight: 500;
+      display: none;
+    }
+
+    #message.visible {
+      display: block;
+    }
+
+    .creds-box {
+      margin-top: 28px;
+      padding: 14px 16px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--surface);
+      font-size: 12px;
+      color: var(--ink-muted);
+      line-height: 1.7;
+    }
+
+    .creds-box strong {
+      color: var(--ink);
+      font-weight: 600;
+    }
+
+    .creds-title {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--ink-faint);
+      margin-bottom: 8px;
+    }
+
+    /* ======= RESPONSIVE ======= */
+    @media (max-width: 768px) {
+      body {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr;
+      }
+
+      .left-panel {
+        padding: 32px 28px;
+        min-height: 220px;
+      }
+
+      .left-hero h2 { font-size: 32px; }
+      .tag-row { display: none; }
+
+      .right-panel {
+        padding: 36px 28px;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- LEFT PANEL -->
+<div class="left-panel">
+  <div class="left-brand">JECKAT BRIONS POS</div>
+
+  <div class="left-hero">
+    <h2>Your store,<br><em>managed.</em></h2>
+    <p>A clean point-of-sale system for fast transactions, smart inventory, and clear insights.</p>
+
+    <div class="tag-row">
+      <span class="tag active"><span class="dot"></span>Inventory</span>
+      <span class="tag active"><span class="dot"></span>Sales</span>
+      <span class="tag"><span class="dot"></span>Analytics</span>
+      <span class="tag"><span class="dot"></span>GCash</span>
+    </div>
+  </div>
+
+  <div class="left-footer">Point of Sale Management System</div>
+</div>
+
+<!-- RIGHT PANEL -->
+<div class="right-panel">
+  <div class="login-box">
+
+    <div class="login-eyebrow">Sign in</div>
+
+    <h1>Welcome<br><em>back.</em></h1>
+    <p class="login-subtitle">Enter your credentials to continue.</p>
+
+    <div class="field">
+      <label>Username</label>
+      <input id="username" type="text" placeholder="your username" autofocus>
+    </div>
+
+    <div class="field">
+      <label>Password</label>
+      <input id="password" type="password" placeholder="••••••••">
+    </div>
+
+    <button class="btn-login" onclick="login()">Continue →</button>
+
+    <p id="message"></p>
+
+    <div class="creds-box">
+      <div class="creds-title">Demo Credentials</div>
+      <strong>Admin</strong> — admin / admin012014<br>
+      <strong>Cashier</strong> — cashier / [cashier password]
+    </div>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./script.js"></script>
+
+<script>
+  // Show error with visible class
+  const origSetMsg = window.setMsg || function(){};
+  function setMsg(text) {
+    const el = document.getElementById("message");
+    if (!el) return;
+    el.innerText = text;
+    if (text) {
+      el.classList.add("visible");
+    } else {
+      el.classList.remove("visible");
+    }
+  }
+  window.setMsg = setMsg;
+
+  // Redirect if already logged in
+  (function () {
+    const stored = localStorage.getItem("user");
+    if (!stored) return;
+    try {
+      const u = JSON.parse(stored);
+      if (u && u.role) {
+        window.location.href = u.role === "admin" ? "admin.html" : "cashier.html";
+      }
+    } catch (e) {
+      localStorage.removeItem("user");
+    }
+  })();
+
+  document.getElementById("username").addEventListener("keypress", function (e) {
+    if (e.key === "Enter") document.getElementById("password").focus();
+  });
+
+  document.getElementById("password").addEventListener("keypress", function (e) {
+    if (e.key === "Enter") login();
+  });
+</script>
+
+</body>
+</html>

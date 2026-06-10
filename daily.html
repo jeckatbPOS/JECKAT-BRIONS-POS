@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daily Sales</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #f5f4f0;
+      --surface: #ffffff;
+      --border: #e2e0d8;
+      --text: #111008;
+      --muted: #8a8070;
+      --green: #2d6a4f;
+      --green-light: #e8f5f0;
+      --red: #c0392b;
+      --red-light: #fdf0ef;
+      --blue: #1a3a5c;
+      --blue-light: #eef3f9;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+    }
+
+    /* ── TOPBAR ── */
+    .topbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky; top: 0; z-index: 50;
+    }
+    .topbar-brand {
+      font-family: 'DM Serif Display', serif;
+      font-size: 20px; letter-spacing: -.03em;
+    }
+    .topbar-brand em { font-style: italic; color: var(--muted); }
+    .topbar-nav { display: flex; gap: 8px; align-items: center; }
+    .nav-btn {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px; font-weight: 500;
+      padding: 7px 14px; border-radius: 8px;
+      border: 1px solid var(--border);
+      background: transparent; cursor: pointer;
+      color: var(--muted); transition: all .15s;
+    }
+    .nav-btn:hover   { border-color: var(--text); color: var(--text); background: var(--surface); }
+    .nav-btn.active  { background: var(--text); color: #fff; border-color: var(--text); }
+    .nav-btn.logout:hover { border-color: var(--red); color: var(--red); background: var(--red-light); }
+
+    /* ── LAYOUT ── */
+    .container { max-width: 1100px; margin: 0 auto; padding: 32px 24px 60px; }
+
+    .page-header { margin-bottom: 28px; }
+    .page-header h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 32px; letter-spacing: -.03em; margin-bottom: 4px;
+    }
+    .page-header h1 em { font-style: italic; color: var(--muted); }
+    .page-header p { font-size: 13px; color: var(--muted); }
+
+    /* ── DATE PICKER ROW ── */
+    .controls-row {
+      display: flex; gap: 10px; align-items: center;
+      margin-bottom: 28px; flex-wrap: wrap;
+    }
+    .date-input {
+      font-family: 'DM Sans', sans-serif;
+      padding: 9px 14px; border-radius: 10px;
+      border: 1px solid var(--border); background: var(--surface);
+      font-size: 13px; color: var(--text); outline: none;
+      transition: border-color .15s;
+    }
+    .date-input:focus { border-color: var(--text); }
+    .load-btn {
+      font-family: 'DM Sans', sans-serif;
+      padding: 9px 18px; border-radius: 10px;
+      border: none; background: var(--text); color: #fff;
+      font-size: 13px; font-weight: 600; cursor: pointer;
+      transition: all .15s;
+    }
+    .load-btn:hover { background: #2a2a20; }
+    .today-btn {
+      font-family: 'DM Sans', sans-serif;
+      padding: 9px 14px; border-radius: 10px;
+      border: 1px solid var(--border); background: var(--bg);
+      font-size: 13px; font-weight: 500; cursor: pointer;
+      color: var(--text); transition: all .15s;
+    }
+    .today-btn:hover { border-color: var(--text); background: var(--surface); }
+
+    /* ── SUMMARY TILES ── */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 12px; margin-bottom: 28px;
+    }
+    .summary-tile {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; padding: 16px 18px;
+    }
+    .summary-tile-label {
+      font-size: 9px; text-transform: uppercase; letter-spacing: .1em;
+      color: var(--muted); font-weight: 700; margin-bottom: 6px;
+    }
+    .summary-tile-value {
+      font-family: 'DM Serif Display', serif;
+      font-size: 24px; letter-spacing: -.02em;
+    }
+    .summary-tile-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+    /* ── BRANCH SECTIONS ── */
+    .branch-section {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; overflow: hidden; margin-bottom: 16px;
+    }
+    .branch-header {
+      padding: 14px 20px;
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+    }
+    .branch-name {
+      font-family: 'DM Serif Display', serif;
+      font-size: 16px; letter-spacing: -.02em;
+    }
+    .branch-stats { display: flex; gap: 16px; }
+    .branch-stat { text-align: right; }
+    .branch-stat-label { font-size: 9px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 700; }
+    .branch-stat-value { font-family: 'DM Serif Display', serif; font-size: 18px; }
+
+    /* ── TABLE ── */
+    .sales-table-wrap { overflow-x: auto; }
+    table {
+      width: 100%; border-collapse: collapse;
+      font-size: 12px;
+    }
+    thead th {
+      font-size: 9px; text-transform: uppercase; letter-spacing: .08em;
+      color: var(--muted); font-weight: 700;
+      padding: 10px 20px; text-align: left;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+    thead th:last-child { text-align: right; }
+    tbody td {
+      padding: 10px 20px; border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+    tbody tr:last-child td { border-bottom: none; }
+    .td-right { text-align: right; font-weight: 600; color: var(--green); }
+    .td-muted  { color: var(--muted); }
+
+    /* ── TX LIST ── */
+    .tx-row { cursor: pointer; transition: background .1s; }
+    .tx-row:hover { background: var(--bg); }
+    .tx-id { font-size: 10px; color: var(--muted); font-family: monospace; }
+    .tx-method {
+      display: inline-block; font-size: 9px; font-weight: 600;
+      padding: 2px 7px; border-radius: 20px;
+      background: var(--bg); border: 1px solid var(--border); color: var(--muted);
+    }
+    .tx-method.gcash { background: var(--blue-light); color: var(--blue); border-color: #c5d8ec; }
+
+    .empty-row td {
+      padding: 24px 20px; text-align: center;
+      color: var(--muted); font-size: 13px;
+    }
+
+    /* ── LOADING ── */
+    .loading {
+      padding: 40px; text-align: center;
+      color: var(--muted); font-size: 13px;
+    }
+
+    /* ── TX DETAIL MODAL ── */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.45); backdrop-filter: blur(3px);
+      z-index: 100; display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none; transition: opacity .2s ease;
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+    .modal {
+      background: var(--surface); border-radius: 18px;
+      width: 460px; max-width: 94vw; max-height: 86vh; overflow-y: auto;
+      box-shadow: 0 24px 60px rgba(0,0,0,.18);
+      transform: translateY(16px) scale(.97); opacity: 0;
+      transition: transform .22s ease, opacity .22s ease;
+    }
+    .modal-overlay.open .modal { transform: translateY(0) scale(1); opacity: 1; }
+    .modal-header {
+      padding: 20px 20px 14px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: flex-start; justify-content: space-between;
+    }
+    .modal-title { font-family: 'DM Serif Display', serif; font-size: 18px; }
+    .modal-close {
+      font-family: 'DM Sans', sans-serif;
+      width: 30px; height: 30px; border-radius: 8px;
+      border: 1px solid var(--border); background: transparent;
+      cursor: pointer; font-size: 13px; color: var(--muted);
+      display: flex; align-items: center; justify-content: center;
+      transition: all .15s;
+    }
+    .modal-close:hover { background: var(--red-light); border-color: var(--red); color: var(--red); }
+    .modal-body { padding: 18px 20px 24px; }
+    .modal-meta { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+    .meta-pill {
+      font-size: 11px; padding: 3px 10px; border-radius: 20px;
+      background: var(--bg); border: 1px solid var(--border); color: var(--muted);
+      font-weight: 500;
+    }
+    .modal-items-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .modal-items-table th {
+      font-size: 9px; text-transform: uppercase; letter-spacing: .08em;
+      color: var(--muted); font-weight: 700;
+      padding: 0 0 8px; border-bottom: 1px solid var(--border); text-align: left;
+    }
+    .modal-items-table th:last-child { text-align: right; }
+    .modal-items-table td { padding: 8px 0; border-bottom: 1px solid var(--border); }
+    .modal-items-table tr:last-child td { border-bottom: none; }
+    .modal-total-line {
+      display: flex; justify-content: space-between; align-items: baseline;
+      margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border);
+    }
+    .modal-total-label { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 700; }
+    .modal-total-value { font-family: 'DM Serif Display', serif; font-size: 22px; }
+
+    @media (max-width: 640px) {
+      .branch-stats { gap: 10px; }
+      .summary-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- TX DETAIL MODAL -->
+<div class="modal-overlay" id="txModal" onclick="closeModalOnOverlay(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTxId">Transaction</div>
+      <button class="modal-close" onclick="closeTxModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-meta" id="modalMeta"></div>
+      <table class="modal-items-table">
+        <thead><tr><th>Item</th><th>Variant</th><th>Qty</th><th style="text-align:right;">Total</th></tr></thead>
+        <tbody id="modalItems"></tbody>
+      </table>
+      <div class="modal-total-line">
+        <span class="modal-total-label">Total Paid</span>
+        <span class="modal-total-value" id="modalTotal"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOPBAR -->
+<nav class="topbar">
+  <span class="topbar-brand"><em>pos</em>system</span>
+  <div class="topbar-nav">
+    <button class="nav-btn" onclick="window.location.href='admin.html'">Inventory</button>
+    <button class="nav-btn active">Daily</button>
+    <button class="nav-btn" onclick="window.location.href='monthly.html'">Monthly</button>
+    <button class="nav-btn logout" onclick="logout()">Logout →</button>
+  </div>
+</nav>
+
+<div class="container">
+
+  <div class="page-header">
+    <h1>Daily <em>Sales</em></h1>
+    <p>View all transactions per branch for any date.</p>
+  </div>
+
+  <!-- CONTROLS -->
+  <div class="controls-row">
+    <input type="date" id="dateInput" class="date-input">
+    <button class="load-btn" onclick="loadDaily()">Load</button>
+    <button class="today-btn" onclick="setToday()">Today</button>
+  </div>
+
+  <!-- OVERALL SUMMARY -->
+  <div class="summary-grid" id="summaryGrid">
+    <div class="summary-tile">
+      <div class="summary-tile-label">Total Revenue</div>
+      <div class="summary-tile-value" id="sumRevenue">—</div>
+    </div>
+    <div class="summary-tile">
+      <div class="summary-tile-label">Transactions</div>
+      <div class="summary-tile-value" id="sumTx">—</div>
+    </div>
+    <div class="summary-tile">
+      <div class="summary-tile-label">Units Sold</div>
+      <div class="summary-tile-value" id="sumUnits">—</div>
+    </div>
+    <div class="summary-tile">
+      <div class="summary-tile-label">Active Branches</div>
+      <div class="summary-tile-value" id="sumBranches">—</div>
+    </div>
+  </div>
+
+  <!-- BRANCH SECTIONS -->
+  <div id="branchSections">
+    <div class="loading">Select a date and click Load</div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./script.js"></script>
+<script>
+  // ── AUTH ──
+  (function () {
+    const stored = localStorage.getItem("user");
+    if (!stored) { window.location.href = "index.html"; return; }
+    try {
+      const u = JSON.parse(stored);
+      if (!u || u.role !== "admin") window.location.href = "cashier.html";
+    } catch (e) { window.location.href = "index.html"; }
+  })();
+
+  const BRANCH_NAMES = {
+    1: "999 MALL 1A-06",
+    2: "999 MALL 1F-01",
+    3: "DIVI MALL 21-08",
+    4: "168 MALL"
+  };
+
+  // Set today's date on load
+  function setToday() {
+    const today = new Date().toISOString().split("T")[0];
+    document.getElementById("dateInput").value = today;
+    loadDaily();
+  }
+  setToday();
+
+  async function loadDaily() {
+    const dateVal = document.getElementById("dateInput").value;
+    if (!dateVal) { alert("Please select a date"); return; }
+
+    const branchSections = document.getElementById("branchSections");
+    branchSections.innerHTML = `<div class="loading">Loading transactions…</div>`;
+
+    document.getElementById("sumRevenue").textContent  = "—";
+    document.getElementById("sumTx").textContent       = "—";
+    document.getElementById("sumUnits").textContent    = "—";
+    document.getElementById("sumBranches").textContent = "—";
+
+    try {
+      const { data: txns, error } = await window.client
+        .from("transactions")
+        .select("*")
+        .gte("created_at", dateVal + "T00:00:00")
+        .lte("created_at", dateVal + "T23:59:59")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      const rows = txns || [];
+
+      if (rows.length === 0) {
+        branchSections.innerHTML = `<div class="loading">No transactions found for this date.</div>`;
+        document.getElementById("sumRevenue").textContent  = "₱0.00";
+        document.getElementById("sumTx").textContent       = "0";
+        document.getElementById("sumUnits").textContent    = "0";
+        document.getElementById("sumBranches").textContent = "0";
+        return;
+      }
+
+      // Group by branch
+      const byBranch = {};
+      rows.forEach(tx => {
+        const b = tx.branch;
+        if (!byBranch[b]) byBranch[b] = [];
+        byBranch[b].push(tx);
+      });
+
+      let totalRevenue = 0, totalTx = 0, totalUnits = 0;
+
+      branchSections.innerHTML = "";
+
+      Object.keys(byBranch).sort().forEach(branch => {
+        const txList    = byBranch[branch];
+        let branchRev   = 0, branchUnits = 0;
+
+        txList.forEach(tx => {
+          branchRev += Number(tx.total || 0);
+          const its  = Array.isArray(tx.items) ? tx.items : [];
+          its.forEach(i => { branchUnits += Number(i.qty || i.quantity || 0); });
+        });
+
+        totalRevenue += branchRev;
+        totalTx      += txList.length;
+        totalUnits   += branchUnits;
+
+        const branchName = BRANCH_NAMES[branch] || "Branch " + branch;
+
+        const txRows = txList.map(tx => {
+          const its   = Array.isArray(tx.items) ? tx.items : [];
+          const names = its.map(i => i.name).join(", ");
+          const units = its.reduce((s, i) => s + Number(i.qty || i.quantity || 0), 0);
+          const time  = new Date(tx.created_at).toLocaleTimeString("en-PH", { hour: "2-digit", minute: "2-digit" });
+
+          return `
+            <tr class="tx-row" onclick='openTxModal(${JSON.stringify(tx).replace(/'/g,"&#39;")})'>
+              <td>
+                <div class="tx-id">${tx.transaction_id || tx.id}</div>
+                <div style="font-size:11px;color:var(--muted);">${time}</div>
+              </td>
+              <td style="font-size:11px;max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${names}</td>
+              <td class="td-muted">${units}</td>
+              <td>
+                <span class="tx-method ${tx.payment_method === 'gcash' ? 'gcash' : ''}">
+                  ${tx.payment_method === 'gcash' ? '📱 GCash' : '💵 Cash'}
+                </span>
+              </td>
+              <td class="td-right">₱${Number(tx.total || 0).toFixed(2)}</td>
+            </tr>`;
+        }).join("");
+
+        branchSections.innerHTML += `
+          <div class="branch-section">
+            <div class="branch-header">
+              <div class="branch-name">${branchName}</div>
+              <div class="branch-stats">
+                <div class="branch-stat">
+                  <div class="branch-stat-label">Revenue</div>
+                  <div class="branch-stat-value">₱${branchRev.toFixed(2)}</div>
+                </div>
+                <div class="branch-stat">
+                  <div class="branch-stat-label">Tx</div>
+                  <div class="branch-stat-value">${txList.length}</div>
+                </div>
+                <div class="branch-stat">
+                  <div class="branch-stat-label">Units</div>
+                  <div class="branch-stat-value">${branchUnits}</div>
+                </div>
+              </div>
+            </div>
+            <div class="sales-table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Transaction</th>
+                    <th>Items</th>
+                    <th>Units</th>
+                    <th>Method</th>
+                    <th style="text-align:right;">Total</th>
+                  </tr>
+                </thead>
+                <tbody>${txRows}</tbody>
+              </table>
+            </div>
+          </div>`;
+      });
+
+      document.getElementById("sumRevenue").textContent  = "₱" + totalRevenue.toFixed(2);
+      document.getElementById("sumTx").textContent       = totalTx;
+      document.getElementById("sumUnits").textContent    = totalUnits;
+      document.getElementById("sumBranches").textContent = Object.keys(byBranch).length;
+
+    } catch (err) {
+      branchSections.innerHTML = `<div class="loading">❌ Error: ${err.message}</div>`;
+      console.error(err);
+    }
+  }
+
+  // ── TX DETAIL MODAL ──
+  function openTxModal(tx) {
+    document.getElementById("modalTxId").textContent = tx.transaction_id || ("TX #" + tx.id);
+
+    const time   = new Date(tx.created_at).toLocaleString("en-PH", { dateStyle: "medium", timeStyle: "short" });
+    const branch = BRANCH_NAMES[tx.branch] || "Branch " + tx.branch;
+
+    document.getElementById("modalMeta").innerHTML = `
+      <span class="meta-pill">📍 ${branch}</span>
+      <span class="meta-pill">🕐 ${time}</span>
+      <span class="meta-pill ${tx.payment_method === 'gcash' ? '' : ''}">${tx.payment_method === 'gcash' ? '📱 GCash' : '💵 Cash'}</span>
+    `;
+
+    const items = Array.isArray(tx.items) ? tx.items : [];
+    document.getElementById("modalItems").innerHTML = items.map(i => {
+      const variant = [i.color, i.size].filter(Boolean).join(" · ");
+      return `
+        <tr>
+          <td>${i.name}</td>
+          <td style="color:var(--muted);font-size:11px;">${variant || "—"}</td>
+          <td style="color:var(--muted);">${i.qty}</td>
+          <td style="text-align:right;font-weight:600;color:var(--green);">₱${Number(i.total || 0).toFixed(2)}</td>
+        </tr>`;
+    }).join("");
+
+    document.getElementById("modalTotal").textContent = "₱" + Number(tx.total || 0).toFixed(2);
+    document.getElementById("txModal").classList.add("open");
+  }
+
+  function closeTxModal() { document.getElementById("txModal").classList.remove("open"); }
+  function closeModalOnOverlay(e) { if (e.target === document.getElementById("txModal")) closeTxModal(); }
+</script>
+</body>
+</html>
