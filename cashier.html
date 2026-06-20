@@ -601,30 +601,48 @@
     .sales-empty { padding: 14px 0; text-align: center; color: var(--muted); font-size: 12px; }
     .sales-date-badge { font-size: 10px; font-weight: 500; color: var(--muted); background: var(--bg); border: 1px solid var(--border); padding: 2px 8px; border-radius: 20px; }
 
-    @media (max-width: 1200px) {
+    /* Tablets in landscape (e.g. 10.1" tablets, ~960px–1200px wide):
+       keep the desktop side-by-side layout, just narrow the cart
+       sidebar a bit and tighten the product grid so cards fit. */
+    @media (max-width: 1200px) and (min-width: 821px) and (orientation: landscape) {
+      .app {
+        grid-template-columns: 1fr 300px;
+      }
+
+      #products {
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      }
+    }
+
+    /* Stacked layout: phones (any orientation) and tablets in PORTRAIT.
+       The cart flows naturally below the products (scrolls with the
+       page) rather than sitting in a fixed bottom sheet, since both
+       phones and tablets have enough room for this once stacked. */
+    @media (max-width: 1200px) and (orientation: portrait), (max-width: 820px) {
+      body {
+        overflow: auto;
+      }
+
       .app {
         grid-template-columns: 1fr;
         height: auto;
       }
 
       .left-panel {
-        min-height: 100vh;
+        min-height: auto;
       }
 
       .right-panel {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        width: 100%;
-        max-height: 50vh;
+        position: relative;
+        max-height: none;
         border-left: none;
         border-top: 1px solid var(--border);
-        z-index: 10;
+        box-shadow: none;
+        margin-top: 20px;
       }
 
       .products-section {
-        padding-bottom: calc(50vh + 20px);
+        padding-bottom: 20px;
       }
 
       #products {
