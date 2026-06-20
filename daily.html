@@ -339,6 +339,14 @@
     4: "168 MALL"
   };
 
+  // ── Currency formatting helper ──
+  function formatPeso(num) {
+    return "₱" + Number(num || 0).toLocaleString("en-PH", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  }
+
   // Set today's date on load
   function setToday() {
     const today = new Date().toISOString().split("T")[0];
@@ -373,7 +381,7 @@
 
       if (rows.length === 0) {
         branchSections.innerHTML = `<div class="loading">No transactions found for this date.</div>`;
-        document.getElementById("sumRevenue").textContent  = "₱0.00";
+        document.getElementById("sumRevenue").textContent  = formatPeso(0);
         document.getElementById("sumTx").textContent       = "0";
         document.getElementById("sumUnits").textContent    = "0";
         document.getElementById("sumBranches").textContent = "0";
@@ -427,7 +435,7 @@
                   ${tx.payment_method === 'gcash' ? '📱 GCash' : '💵 Cash'}
                 </span>
               </td>
-              <td class="td-right">₱${Number(tx.total || 0).toFixed(2)}</td>
+              <td class="td-right">${formatPeso(tx.total)}</td>
             </tr>`;
         }).join("");
 
@@ -438,7 +446,7 @@
               <div class="branch-stats">
                 <div class="branch-stat">
                   <div class="branch-stat-label">Revenue</div>
-                  <div class="branch-stat-value">₱${branchRev.toFixed(2)}</div>
+                  <div class="branch-stat-value">${formatPeso(branchRev)}</div>
                 </div>
                 <div class="branch-stat">
                   <div class="branch-stat-label">Tx</div>
@@ -467,7 +475,7 @@
           </div>`;
       });
 
-      document.getElementById("sumRevenue").textContent  = "₱" + totalRevenue.toFixed(2);
+      document.getElementById("sumRevenue").textContent  = formatPeso(totalRevenue);
       document.getElementById("sumTx").textContent       = totalTx;
       document.getElementById("sumUnits").textContent    = totalUnits;
       document.getElementById("sumBranches").textContent = Object.keys(byBranch).length;
@@ -499,11 +507,11 @@
           <td>${i.name}</td>
           <td style="color:var(--muted);font-size:11px;">${variant || "—"}</td>
           <td style="color:var(--muted);">${i.qty}</td>
-          <td style="text-align:right;font-weight:600;color:var(--green);">₱${Number(i.total || 0).toFixed(2)}</td>
+          <td style="text-align:right;font-weight:600;color:var(--green);">${formatPeso(i.total)}</td>
         </tr>`;
     }).join("");
 
-    document.getElementById("modalTotal").textContent = "₱" + Number(tx.total || 0).toFixed(2);
+    document.getElementById("modalTotal").textContent = formatPeso(tx.total);
     document.getElementById("txModal").classList.add("open");
   }
 
