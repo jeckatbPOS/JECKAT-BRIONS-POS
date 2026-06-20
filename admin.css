@@ -545,6 +545,184 @@ hr {
 }
 
 /* =========================
+   MODALS (product detail)
+========================= */
+
+.modal {
+  background: var(--surface);
+  border-radius: 18px;
+  max-width: 92vw;
+  width: 400px;
+  max-height: 90vh;
+  overflow: hidden;
+  box-shadow: 0 24px 60px rgba(0,0,0,.18);
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-img {
+  width: 100%;
+  height: clamp(150px, 30vw, 200px);
+  object-fit: cover;
+  display: block;
+  flex-shrink: 0;
+}
+
+.modal-img-placeholder {
+  width: 100%;
+  height: clamp(150px, 30vw, 200px);
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  color: var(--border);
+  flex-shrink: 0;
+}
+
+.modal-body {
+  padding: clamp(14px, 4vw, 18px);
+  overflow-y: auto;
+  flex: 1;
+}
+
+.modal-body::-webkit-scrollbar {
+  width: 4px;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+  background: #ddd;
+  border-radius: 2px;
+}
+
+.modal-name {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(16px, 5vw, 20px);
+  letter-spacing: -0.02em;
+  margin-bottom: 4px;
+}
+
+.modal-price {
+  font-size: clamp(15px, 4vw, 17px);
+  font-weight: 600;
+  color: var(--promo-on);
+  margin-bottom: 8px;
+}
+
+.modal-meta {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.modal-section-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-muted);
+  margin-bottom: 6px;
+}
+
+.variant-chips {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.variant-chip {
+  font-family: 'DM Sans', sans-serif;
+  padding: clamp(5px, 2vw, 6px) clamp(10px, 3vw, 12px);
+  border-radius: 20px;
+  border: 1.5px solid var(--border);
+  background: var(--bg);
+  color: var(--ink);
+  font-size: clamp(10px, 3vw, 11px);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+}
+
+.variant-chip:hover {
+  border-color: var(--ink);
+  background: var(--surface);
+}
+
+.variant-chip.selected {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #fff;
+  font-weight: 600;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 8px;
+  padding: clamp(12px, 3vw, 16px);
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+  flex-shrink: 0;
+}
+
+.modal-cancel-btn {
+  font-family: 'DM Sans', sans-serif;
+  flex: 0 0 auto;
+  padding: clamp(9px, 2vw, 11px) clamp(12px, 3vw, 16px);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--ink-muted);
+  font-size: clamp(11px, 3vw, 12px);
+  cursor: pointer;
+  transition: all 0.15s;
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-cancel-btn:hover {
+  border-color: var(--danger);
+  color: var(--danger);
+  background: var(--danger-bg);
+}
+
+.modal-add-btn {
+  font-family: 'DM Sans', sans-serif;
+  flex: 1;
+  padding: clamp(9px, 2vw, 11px);
+  border-radius: var(--radius-sm);
+  border: none;
+  background: var(--ink);
+  color: #fff;
+  font-size: clamp(11px, 3vw, 12px);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-add-btn:hover {
+  background: #1a1a1a;
+}
+
+.modal-add-btn:disabled {
+  background: #ccc;
+  color: #888;
+  cursor: not-allowed;
+}
+
+/* =========================
    STAT CARDS (analytics)
 ========================= */
 
