@@ -288,6 +288,7 @@
       backdrop-filter: blur(4px);
       z-index: 200;
       display: flex; align-items: center; justify-content: center;
+      padding: clamp(8px, 3vw, 24px);
       opacity: 0; pointer-events: none;
       transition: opacity .2s ease;
     }
@@ -296,6 +297,8 @@
       background: var(--surface);
       border-radius: 20px;
       width: 340px; max-width: 92vw;
+      max-height: 90vh;
+      overflow-y: auto;
       padding: clamp(20px, 5vw, 28px) clamp(20px, 5vw, 24px) clamp(18px, 5vw, 24px);
       text-align: center;
       box-shadow: 0 24px 60px rgba(0,0,0,.2);
@@ -360,12 +363,16 @@
 
     #message { margin-top: 7px; font-size: 11px; font-weight: 500; min-height: 14px; color: var(--muted); text-align: center; word-break: break-word; }
 
+    /* ============================================
+       PRODUCT MODAL — FIXED FOR RESPONSIVE SIZING
+       ============================================ */
     .modal-overlay {
       position: fixed; inset: 0;
       background: rgba(0,0,0,.45);
       backdrop-filter: blur(3px);
       z-index: 100;
       display: flex; align-items: center; justify-content: center;
+      padding: clamp(8px, 3vw, 24px); /* keeps modal off the screen edges on small devices */
       opacity: 0; pointer-events: none;
       transition: opacity .2s ease;
     }
@@ -375,8 +382,10 @@
       background: var(--surface);
       border-radius: 18px;
       width: 380px;
-      max-width: 92vw;
-      max-height: 90vh;
+      max-width: 100%;
+      /* KEY FIX: cap the whole modal well under the viewport height
+         so it never grows taller than the screen */
+      max-height: min(640px, 85vh);
       overflow: hidden;
       box-shadow: 0 24px 60px rgba(0,0,0,.18);
       transform: translateY(16px) scale(.97);
@@ -387,17 +396,30 @@
     }
     .modal-overlay.open .modal { transform: translateY(0) scale(1); opacity: 1; }
 
-    .modal-img { width: 100%; height: clamp(150px, 30vw, 200px); object-fit: cover; display: block; flex-shrink: 0; }
+    /* Image shrinks more aggressively on small screens */
+    .modal-img {
+      width: 100%;
+      height: clamp(90px, 18vw, 160px);
+      object-fit: cover;
+      display: block;
+      flex-shrink: 0;
+    }
     .modal-img-placeholder {
-      width: 100%; height: clamp(150px, 30vw, 200px); background: var(--bg);
+      width: 100%;
+      height: clamp(90px, 18vw, 160px);
+      background: var(--bg);
       display: flex; align-items: center; justify-content: center;
-      font-size: 56px; color: var(--border); flex-shrink: 0;
+      font-size: 40px; color: var(--border);
+      flex-shrink: 0;
     }
 
-    .modal-body { 
-      padding: clamp(14px, 4vw, 18px); 
+    .modal-body {
+      padding: clamp(12px, 4vw, 18px);
       overflow-y: auto;
       flex: 1;
+      min-height: 0; /* CRITICAL FIX: without this, a flex child with overflow:auto
+                         won't scroll — it just keeps growing and pushes the
+                         buttons off screen, which is the bug you were seeing */
     }
     .modal-body::-webkit-scrollbar { width: 4px; }
     .modal-body::-webkit-scrollbar-thumb { background: #ddd; border-radius: 2px; }
@@ -406,7 +428,21 @@
     .modal-price { font-size: clamp(15px, 4vw, 17px); font-weight: 600; color: var(--green); margin-bottom: 8px; }
     .modal-meta { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
     .modal-section-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 6px; }
-    .variant-chips { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 10px; }
+
+    /* Variant chip rows get their own scroll cap, so a long color/size
+       list can't push the action buttons off screen */
+    .variant-chips {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+      max-height: 140px;
+      overflow-y: auto;
+      padding-right: 2px;
+    }
+    .variant-chips::-webkit-scrollbar { width: 4px; }
+    .variant-chips::-webkit-scrollbar-thumb { background: #ddd; border-radius: 2px; }
+
     .variant-chip {
       font-family: 'DM Sans', sans-serif;
       padding: clamp(5px, 2vw, 6px) clamp(10px, 3vw, 12px); 
@@ -429,7 +465,7 @@
       padding: clamp(12px, 3vw, 16px);
       border-top: 1px solid var(--border);
       background: var(--surface);
-      flex-shrink: 0;
+      flex-shrink: 0; /* always visible, never scrolls away */
     }
     .modal-cancel-btn {
       font-family: 'DM Sans', sans-serif;
@@ -467,6 +503,27 @@
     }
     .modal-add-btn:hover { background: #2a2a20; }
     .modal-add-btn:disabled { background: #ccc; color: #888; cursor: not-allowed; }
+
+    /* Extra-short viewports (landscape phones, small laptops with browser chrome) */
+    @media (max-height: 700px) {
+      .modal {
+        max-height: 92vh;
+      }
+      .modal-img, .modal-img-placeholder {
+        height: clamp(70px, 14vw, 110px);
+      }
+      .variant-chips {
+        max-height: 100px;
+      }
+    }
+
+    /* Hide the product image entirely on very short screens to free up
+       space so the Cancel/Add to Cart buttons stay reachable */
+    @media (max-height: 560px) {
+      #modalImgArea {
+        display: none;
+      }
+    }
 
     .sales-trigger-btn {
       font-family: 'DM Sans', sans-serif;
@@ -712,10 +769,10 @@
       <div class="modal-price" id="modalPrice"></div>
       <div class="modal-meta" id="modalMeta"></div>
       <div id="modalVariants"></div>
-      <div class="modal-actions">
-        <button class="modal-cancel-btn" onclick="closeModal()">Cancel</button>
-        <button class="modal-add-btn" id="modalAddBtn" onclick="confirmAddToCart()">Add to Cart</button>
-      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-cancel-btn" onclick="closeModal()">Cancel</button>
+      <button class="modal-add-btn" id="modalAddBtn" onclick="confirmAddToCart()">Add to Cart</button>
     </div>
   </div>
 </div>
